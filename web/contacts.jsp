@@ -84,5 +84,7 @@
             </tr>
             <% }%>
         </table>
+        
+        <a href="FazerLogout">Logout</a>
     </body>
 </html>

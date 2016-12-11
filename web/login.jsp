@@ -1,5 +1,10 @@
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.Statement"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page import="java.sql.Connection"%>
 <%@page import="com.sample.contacts.Login"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 
 <html>
@@ -14,11 +19,16 @@
         
     </head>
     <body>
+
  
     <div class="container">
         
-        <h1>HOME - RESULTADOS</h1>
-        <hr> 
+                    <div class="navbar">
+              
+            <div class="pull-left"><h1>WebQuiz</h1></div>
+            <div class="pull-right" style="padding-top:20px"><a class="btn btn-info" href="ranking.jsp">Ranking</a></div>
+
+           </div><hr/>
         
         <%
         String error = null;
@@ -28,11 +38,38 @@
             String username = request.getParameter("username");
             String password = request.getParameter("password");
             try{
-                Login.insert(name, mail, username, password);%>
-                <div class="alert alert-success" role="alert">Cadastro efetuado com sucesso! Efetue o login no formulário à esquerda.</div><%
+                if (Login.verifica(username) == true){
+                    Login.insert(name, mail, username, password);%>
+                    <div class="alert alert-success" role="alert">Cadastro efetuado com sucesso! Efetue o login no formulário à esquerda.</div><%
+                }
+            else {%>
+                <div class="alert alert-danger" role="alert">ATENÇÃO: Já existe um usuário com esse nome cadastrado. Por favor, tente novamente com outro nome de usuário.</div><%
+            }
+                
             }catch(Exception e){error = e.getLocalizedMessage();}
         }
         %>
+        
+        <%
+        if(request.getParameter("logar")!=null){
+            String usernamel = request.getParameter("username-l");    
+            String passwordl = request.getParameter("password-l");
+            Class.forName("org.apache.derby.jdbc.ClientDriver");
+            String url = "jdbc:derby://localhost:1527/sample";
+            Connection con = DriverManager.getConnection (url, "app", "app");
+            Statement st = con.createStatement();
+            ResultSet rs;
+            rs = st.executeQuery("select * from app.usuario where username='" + usernamel + "' and password='" + passwordl + "'");
+            if (rs.next()) {
+                session.setAttribute("username-l", usernamel);
+                response.sendRedirect("index.jsp");
+            }
+            else {
+                out.println("<div class='alert alert-danger' role='alert'>ATENÇÃO: Usuário ou senha inválidos. Por favor, tente novamente.</div>");
+            }
+        }
+        %>      
+               
         
         <%if(error != null){%>
         <h2 style="color: red;">Erro: <%=error%></h2>
@@ -52,16 +89,14 @@
                                     </div>
                         </div>
                         <div class="form-bottom">
-                                        <form role="form" action="" method="post" class="login-form">
+                                        <form role="form" action="" method="get" class="login-form">
                                             <div class="form-group">
-                                                    <label class="sr-only" for="form-username">Usuário</label>
-                                                    <input type="text" name="form-username" placeholder="Nome de usuário..." class="form-username form-control" id="form-username">
+                                                <input type="text" name="username-l" placeholder="Nome de usuário..." class="form-username form-control" id="form-username" required>
                                             </div>
                                             <div class="form-group">
-                                                    <label class="sr-only" for="form-password">Senha</label>
-                                                    <input type="password" name="form-password" placeholder="Senha..." class="form-password form-control" id="form-password">
+                                                <input type="password" name="password-l" placeholder="Senha..." class="form-password form-control" id="form-password" required>
                                             </div>
-                                            <input type="submit" name="ilogin" class="btn btn-success btn-block" value="Entrar">
+                                            <input type="submit" name="logar" class="btn btn-success btn-block" value="Entrar">
                                         </form>
                                 </div>
                         </div>
@@ -99,22 +134,18 @@
                                     </div>
                         </div>
                         <div class="form-bottom">
-                                        <form role="form" action="" method="post" class="registration-form">
+                                        <form role="form" action="" method="get" class="registration-form">
                                             <div class="form-group">
-                                                    <label class="sr-only" for="form-first-name">Nome completo</label>
-                                                    <input type="text" name="name" placeholder="Nome completo..." class="form-first-name form-control" id="form-first-name">
+                                                    <input type="text" name="name" placeholder="Nome completo..." class="form-first-name form-control" id="form-first-name" required>
                                             </div>
                                             <div class="form-group">
-                                                    <label class="sr-only" for="form-email">Email</label>
-                                                    <input type="text" name="mail" placeholder="E-mail..." class="form-email form-control" id="form-email">
+                                                    <input type="email" name="mail" placeholder="E-mail..." class="form-email form-control" id="form-email" required>
                                             </div>
                                             <div class="form-group">
-                                                    <label class="sr-only" for="form-email">Usuário</label>
-                                                    <input type="text" name="username" placeholder="Nome de usuário..." class="form-email form-control" id="form-email">
+                                                    <input type="text" name="username" placeholder="Nome de usuário..." class="form-email form-control" id="form-email" required>
                                             </div>                                                        
                                             <div class="form-group">
-                                                    <label class="sr-only" for="form-last-name">Senha</label>
-                                                    <input type="password" name="password" placeholder="Senha..." class="form-last-name form-control" id="form-last-name">
+                                                    <input type="password" name="password" placeholder="Senha..." class="form-last-name form-control" id="form-last-name" required>
                                             </div>
                                             <input type="submit" name="cadastrar" class="btn btn-success btn-block" value="Cadastrar">
                                         </form>

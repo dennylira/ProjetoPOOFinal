@@ -7,68 +7,63 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+
 public class Login {
     private String name;
     private String mail;
     private String username;
     private String password;
     
-    public static ArrayList<Login> getList(){
-        ArrayList<Login> list;
-        list = new ArrayList<>();
-        try{
-            Class.forName("org.apache.derby.jdbc.ClientDriver");
-            String url = "jdbc:derby://localhost:1527/sample";
-            Connection con = DriverManager.getConnection
-            (url, "app", "app");
-            Statement stmt = con.createStatement();
-            String SQL = "SELECT * FROM USUARIO";
-            ResultSet rs = stmt.executeQuery(SQL);
-            while(rs.next()){
-                Login c = new Login();
-                c.setName(rs.getString("name"));
-                c.setMail(rs.getString("mail"));
-                c.setUsername(rs.getString("username"));
-                c.setPassword(rs.getString("password"));
-                list.add(c);
-            }
-        }catch(Exception ex){
+    //LOGIN:
+    
+    public static String fazerlogin(String username, String password) throws Exception{
+        String usuario = "";    
+        Class.forName("org.apache.derby.jdbc.ClientDriver");
+        String url = "jdbc:derby://localhost:1527/sample";
+        Connection con = DriverManager.getConnection (url, "app", "app");
+        Statement st = con.createStatement();
+        ResultSet rs;
+        rs = st.executeQuery("select * from app.usuario where username='" + username + "' and password='" + password + "'");
+        if (rs.next()) {
+            usuario = username;
+        }
+        else{ 
             return null;
         }
-        return list;
+        return usuario;
     }
     
-    public static Login getLogin(String name){
+    //CADASTRO:
+        
+    //Verifica se o nome de usuário já existe:
+    public static boolean verifica(String username) throws Exception{
+        boolean result = true;
         try{
             Class.forName("org.apache.derby.jdbc.ClientDriver");
             String url = "jdbc:derby://localhost:1527/sample";
-            Connection con = DriverManager.getConnection
-            (url, "app", "app");
-            String SQL = "SELECT * FROM USERNAME WHERE NAME = ?";
+            Connection con = DriverManager.getConnection (url, "app", "app");
+            String SQL = "SELECT * FROM APP.USUARIO WHERE USERNAME = ?";
             PreparedStatement stmt = con.prepareStatement(SQL);
-            stmt.setString(1, name);
+            stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                Login c = new Login();
-                c.setName(rs.getString("name"));
-                c.setMail(rs.getString("mail"));
-                c.setUsername(rs.getString("username"));
-                c.setPassword(rs.getString("password"));
-                return c;
-            }else{return null;}
+                result = false;
+            }
         }catch(Exception ex){
-            return null;
-        }
-    }
-    
+            result = false;
+        }   
+        return result;
+    }   
+
+    //Insere um novo cadastro:
     public static void insert(String name, String mail, String username, String password) throws Exception{
         Connection con = null;
         PreparedStatement stmt = null;
         try{
             Class.forName("org.apache.derby.jdbc.ClientDriver");
             String url = "jdbc:derby://localhost:1527/sample";
-            con = DriverManager.getConnection(url, "app", "app");
-            String SQL = "INSERT INTO APP.USUARIO VALUES(?,?,?,?)";
+            con = DriverManager.getConnection(url, "app", "app");        
+            String SQL = "INSERT INTO APP.USUARIO VALUES(?,?,?,?)";            
             stmt = con.prepareStatement(SQL);
             stmt.setString(1, name);
             stmt.setString(2, mail);
@@ -82,6 +77,8 @@ public class Login {
             try{con.close();}catch(Exception ex2){}
         }
     }
+    
+    //Atualiza dados cadastrais:
     public static void update(String oldName, String name, String mail, String phone) throws Exception{
         Connection con = null;
         PreparedStatement stmt = null;
@@ -105,6 +102,8 @@ public class Login {
             try{con.close();}catch(Exception ex2){}
         }
     }
+    
+    //Apaga o cadastro:
     public static void delete(String name) throws Exception{
         Connection con = null;
         PreparedStatement stmt = null;
