@@ -15,23 +15,7 @@ public class Login {
     private String password;
     
     //LOGIN:
-    
-    public static String fazerlogin(String username, String password) throws Exception{
-        String usuario = "";    
-        Class.forName("org.apache.derby.jdbc.ClientDriver");
-        String url = "jdbc:derby://localhost:1527/sample";
-        Connection con = DriverManager.getConnection (url, "app", "app");
-        Statement st = con.createStatement();
-        ResultSet rs;
-        rs = st.executeQuery("select * from app.usuario where username='" + username + "' and password='" + password + "'");
-        if (rs.next()) {
-            usuario = username;
-        }
-        else{ 
-            return null;
-        }
-        return usuario;
-    }
+   
     
     //CADASTRO:
         
@@ -78,22 +62,46 @@ public class Login {
         }
     }
     
+    //obtém o usuário
+    public static Login getUser(String username){
+        try{
+            Class.forName("org.apache.derby.jdbc.ClientDriver");
+            String url = "jdbc:derby://localhost:1527/sample";
+            Connection con = DriverManager.getConnection
+            (url, "app", "app");
+            String SQL = "SELECT * FROM APP.USUARIO WHERE USERNAME = ?";
+            PreparedStatement stmt = con.prepareStatement(SQL);
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                Login l = new Login();
+                l.setName(rs.getString("name"));
+                l.setMail(rs.getString("mail"));
+                l.setUsername(rs.getString("username"));
+                l.setPassword(rs.getString("password"));
+                return l;
+            }else{return null;}
+        }catch(Exception ex){
+            return null;
+        }
+    }
+    
     //Atualiza dados cadastrais:
-    public static void update(String oldName, String name, String mail, String phone) throws Exception{
+    public static void update(String username, String name, String mail, String password) throws Exception{
         Connection con = null;
         PreparedStatement stmt = null;
         try{
             Class.forName("org.apache.derby.jdbc.ClientDriver");
             String url = "jdbc:derby://localhost:1527/sample";
             con = DriverManager.getConnection(url, "app", "app");
-            String SQL = "UPDATE APP.LOGIN "
-                    + "SET name = ?, mail = ?, phone = ? "
-                    + "WHERE name = ?";
+            String SQL = "UPDATE APP.USUARIO "
+                    + "SET name = ?, mail = ?, password = ? "
+                    + "WHERE username = ?";
             stmt = con.prepareStatement(SQL);
             stmt.setString(1, name);
             stmt.setString(2, mail);
-            stmt.setString(3, phone);
-            stmt.setString(4, oldName);
+            stmt.setString(3, password);
+            stmt.setString(4, username);
             stmt.execute();
         }catch(Exception ex){
             throw ex;
@@ -104,16 +112,16 @@ public class Login {
     }
     
     //Apaga o cadastro:
-    public static void delete(String name) throws Exception{
+    public static void delete(String username) throws Exception{
         Connection con = null;
         PreparedStatement stmt = null;
         try{
             Class.forName("org.apache.derby.jdbc.ClientDriver");
             String url = "jdbc:derby://localhost:1527/sample";
             con = DriverManager.getConnection(url, "app", "app");
-            String SQL = "DELETE FROM APP.CONTACTS WHERE name = ?";
+            String SQL = "DELETE FROM APP.USUARIO WHERE username = ?";
             stmt = con.prepareStatement(SQL);
-            stmt.setString(1, name);
+            stmt.setString(1, username);
             stmt.execute();
         }catch(Exception ex){
             throw ex;
